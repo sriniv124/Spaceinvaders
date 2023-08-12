@@ -10,6 +10,7 @@ pygame.display.set_caption("Space Shooter Tutorial")
 
 #test 1
 #feature 1
+#feature 3
 
 # Load images
 RED_SPACE_SHIP = pygame.image.load(os.path.join("assets", "pixel_ship_red_small.png"))
