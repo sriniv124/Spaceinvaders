@@ -96,10 +96,10 @@ class Ship:
 
 
 class Player(Ship):
-    def __init__(self, x, y, health=100):
+    def __init__(self, x, y,ship_color,laser_color, health=100):
         super().__init__(x, y, health)
-        self.ship_img = YELLOW_SPACE_SHIP
-        self.laser_img = YELLOW_LASER
+        self.ship_img = ship_color
+        self.laser_img = laser_color
         self.mask = pygame.mask.from_surface(self.ship_img)
         self.max_health = health
 
@@ -160,14 +160,19 @@ def main():
     main_font = pygame.font.SysFont("comicsans", 50)
     lost_font = pygame.font.SysFont("comicsans", 60)
 
+    player1=Player(300,630,RED_SPACE_SHIP,RED_LASER)
+    player2=Player(300,630,YELLOW_SPACE_SHIP,YELLOW_LASER)
+
+    players=[player1,player2]
     enemies = []
     wave_length = 5
     enemy_vel = 1
 
     player_vel = 5
-    laser_vel = 5
+    laser_vel = 50
+    laser_vel_enemy=5
 
-    player = Player(300, 630)
+    # player = Player(300, 630)
 
     clock = pygame.time.Clock()
 
@@ -186,7 +191,8 @@ def main():
         for enemy in enemies:
             enemy.draw(WIN)
 
-        player.draw(WIN)
+        player1.draw(WIN)
+        player2.draw(WIN)
 
         if lost:
             lost_label = lost_font.render("You Lost!!", 1, (255,255,255))
@@ -198,7 +204,11 @@ def main():
         clock.tick(FPS)
         redraw_window()
 
-        if lives <= 0 or player.health <= 0:
+        if lives <= 0 or player1.health <= 0:
+            lost = True
+            lost_count += 1
+
+        if lives <= 0 or player2.health <= 0:
             lost = True
             lost_count += 1
 
@@ -220,40 +230,63 @@ def main():
                 quit()
 
         keys = pygame.key.get_pressed()
-        if keys[pygame.K_a] and player.x - player_vel > 0: # left
-            player.x -= player_vel
-        if keys[pygame.K_d] and player.x + player_vel + player.get_width() < WIDTH: # right
-            player.x += player_vel
-        if keys[pygame.K_w] and player.y - player_vel > 0: # up
-            player.y -= player_vel
-        if keys[pygame.K_s] and player.y + player_vel + player.get_height() + 15 < HEIGHT: # down
-            player.y += player_vel
+        if keys[pygame.K_a] and player1.x - player_vel > 0: # left
+            player1.x -= player_vel
+        if keys[pygame.K_d] and player1.x + player_vel + player1.get_width() < WIDTH: # right
+            player1.x += player_vel
+        if keys[pygame.K_w] and player1.y - player_vel > 0: # up
+            player1.y -= player_vel
+        if keys[pygame.K_s] and player1.y + player_vel + player1.get_height() + 15 < HEIGHT: # down
+            player1.y += player_vel
         if keys[pygame.K_SPACE]:
-            player.shoot()
+            player1.shoot()
+
+        if keys[pygame.K_j] and player2.x - player_vel > 0: # left
+            player2.x -= player_vel
+        if keys[pygame.K_l] and player2.x + player_vel + player2.get_width() < WIDTH: # right
+            player2.x += player_vel
+        if keys[pygame.K_i] and player2.y - player_vel > 0: # up
+            player2.y -= player_vel
+        if keys[pygame.K_k] and player2.y + player_vel + player2.get_height() + 15 < HEIGHT: # down
+            player2.y += player_vel
+        if keys[pygame.K_n]:
+            player2.shoot()
 
         for enemy in enemies[:]:
             enemy.move(enemy_vel)
-            enemy.move_lasers(laser_vel, player)
+            enemy.move_lasers(laser_vel_enemy, player1)
+            enemy.move_lasers(laser_vel_enemy, player2)
 
             if random.randrange(0, 2*60) == 1:
                 enemy.shoot()
 
-            if collide(enemy, player):
-                player.health -= 10
+            if collide(enemy, player1):
+                player1.health -= 10
                 enemies.remove(enemy)
+            if collide(enemy, player2):
+                player2.health -= 10
+                enemies.remove(enemy)
+            
             elif enemy.y + enemy.get_height() > HEIGHT:
                 lives -= 1
                 enemies.remove(enemy)
 
-        player.move_lasers(-laser_vel, enemies)
+        player1.move_lasers(-laser_vel, enemies)
+        player2.move_lasers(-laser_vel, enemies)
 
 def main_menu():
-    title_font = pygame.font.SysFont("comicsans", 70)
+    title_font = pygame.font.SysFont("comicsans", 50)
+    instructions=pygame.font.SysFont("comicsans",15)
     run = True
     while run:
         WIN.blit(BG, (0,0))
-        title_label = title_font.render("Press the mouse to begin...", 1, (255,255,255))
+        title_label = title_font.render("Press the mouse to begin...", 1, (255,0,0))
+        instruction_label1=instructions.render("Player 1- use aswd",1,(125,0,255))
+        instruction_label2=instructions.render("Player 2- use jilk",1,(125,0,255))
+
         WIN.blit(title_label, (WIDTH/2 - title_label.get_width()/2, 350))
+        WIN.blit(instruction_label1, (WIDTH/2 - instruction_label1.get_width()/2, 500))
+        WIN.blit(instruction_label2, (WIDTH/2 - instruction_label2.get_width()/2, 550))
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
